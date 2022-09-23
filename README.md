@@ -9,6 +9,8 @@ When writing code keep the following in mind:
 - The [API guidelines](https://rust-lang.github.io/api-guidelines/checklist.html) should be followed for library crates
 - Follow best git practices
 
+Please use the rust toolchain for version `1.58.1`.
+
 # Tasks
 1. Address `TODO`s in `dna` crate and `README`
 2. Address `TODO`s in `nuccount` crate and `README`
