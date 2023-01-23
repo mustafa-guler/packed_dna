@@ -33,4 +33,8 @@ fn main() {
     let opts = Opts::from_args();
     let dna = opts.dna;
     println!("Input: {}", &dna);
+
+    // use FromStr on packed dna
+    // iterate thru packed dna, count
+    // print out counts
 }
