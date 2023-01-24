@@ -16,6 +16,9 @@ use std::{convert::TryFrom, fmt::Display, str::FromStr};
 // Also, the internal representation of the PackedDna struct should be privately scoped
 
 mod packed {
+    pub use std::{fmt::Display, str::FromStr, std::iter::FromIterator};
+    pub struct ParseDnaError<T: Display>(T);
+
     // Internally, we have a vector of i8s. Each i8 represents up to 4
     // nucleotides.
     // 00 -> A
@@ -24,13 +27,15 @@ mod packed {
     // 11 -> T
     pub struct PackedDna {
         data: Vec<i8>,
-        size: usize,
+        pub size: usize,
     }
 
-    impl PackedDna {
+    impl FromStr for PackedDna {
+        type Err = ParseDnaError<String>;
+
         // Returns a an option with Some(p) where p is the PackedDna struct 
         // representig the DNA if parsing was successful and None otherwise.
-        pub fn from_str(s: &str) -> Option<Self> {
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
             let upper = s.to_ascii_uppercase();
             // let mut s_idx = 0; // Index in string
             let mut i = 0; // Index in int that is being modified, from 0 to 3
@@ -41,7 +46,7 @@ mod packed {
 
             for c in upper.chars() {
                 // let c = upper[s_idx];
-                println!("i: {}", i);
+                // println!("i: {}", i);
                 let y: i8 = match c {
                     'A' => 0,
                     'C' => 1,
@@ -51,7 +56,7 @@ mod packed {
                 };
                 
                 if y == -1 {
-                    return None;
+                    return Err(ParseDnaError(upper));
                 }
 
                 x = x | (y << ((3-i) * 2)); // Add nucleotide to int
@@ -78,13 +83,11 @@ mod packed {
             // println!("Succesfully parsed DNA of size {}", p.size);
             // println!("Vector has size {}", p.data.len());
             // println!("SUCCESS");
-            return Some(p)
+            return Ok(p)
         }
     }
 
-    // impl FromIterator for PackedDna {
-
-    // }
+    
 
     impl PackedDna {
         pub fn get(&self, idx: usize) -> Option<crate::Nuc> {
@@ -98,7 +101,8 @@ mod packed {
                 1 => Some(crate::Nuc::C),
                 2 => Some(crate::Nuc::G),
                 3 => Some(crate::Nuc::T),
-                _ => None, // What should I do here?
+                _ => None, // At this point, y should be 0, 1, 2, or 3, but
+                           // I don't know how to formally express it
             };
             
             res
@@ -264,10 +268,10 @@ mod tests {
     #[test]
     fn fromstr_packed() {
         // Test a correct string
-        let p = crate::packed::PackedDna::from_str("CGACGTT");
+        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CGACGTT");
         match p {
-            None => { assert!(false); () }
-            Some(dna) => {
+            Err(_) => { assert!(false); () }
+            Ok(dna) => {
                 assert!(dna.get(0) == Some(crate::Nuc::C));
                 assert!(dna.get(1) == Some(crate::Nuc::G));
                 assert!(dna.get(2) == Some(crate::Nuc::A));
@@ -280,17 +284,18 @@ mod tests {
         }
 
         // Test an invalid string
-        let p = crate::packed::PackedDna::from_str("CgagTNonsense");
+        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgagTNonsense");
         match p {
-            None => { assert!(true); () }
-            Some(dna) => { assert!(false); () }
+            Err(_) => { assert!(true); () }
+            Ok(_) => { assert!(false); () }
         }
 
         // Test mixed uppercase and lowercase string
-        let p = crate::packed::PackedDna::from_str("CgACgTt");
+        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgaCgTt");
         match p {
-            None => { assert!(false); () }
-            Some(dna) => {
+            Err(_) => { assert!(false); () }
+            Ok(dna) => {
+                assert!(dna.size == 7);
                 assert!(dna.get(0) == Some(crate::Nuc::C));
                 assert!(dna.get(1) == Some(crate::Nuc::G));
                 assert!(dna.get(2) == Some(crate::Nuc::A));
@@ -301,5 +306,11 @@ mod tests {
                 ()
             }
         }
+        assert!(true);
+    }
+
+    #[test]
+    fn fromiter_packed() {
+        assert!(false);
     }
 }
