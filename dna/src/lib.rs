@@ -16,7 +16,7 @@ use std::{convert::TryFrom, fmt::Display, str::FromStr};
 // Also, the internal representation of the PackedDna struct should be privately scoped
 
 mod packed {
-    pub use std::{fmt::Display, str::FromStr, std::iter::FromIterator};
+    pub use std::{fmt::Display, str::FromStr, iter::FromIterator};
     pub struct ParseDnaError<T: Display>(T);
 
     // Internally, we have a vector of i8s. Each i8 represents up to 4
@@ -87,7 +87,44 @@ mod packed {
         }
     }
 
-    
+    impl FromIterator<crate::Nuc> for PackedDna {
+        fn from_iter<I: IntoIterator<Item=crate::Nuc>>(iter: I) -> Self {
+            let mut res: Vec<i8> = Vec::new();
+            let mut i = 0; // Index in int that is being modified, from 0 to 3
+            let mut size = 0;
+            let mut x: i8 = 0; // Next int that will be added to the vector
+            for n in iter {
+                let y: i8 = match n {
+                    crate::Nuc::A => 0,
+                    crate::Nuc::C => 1,
+                    crate::Nuc::G => 2,
+                    crate::Nuc::T => 3,
+                };
+
+                x = x | (y << ((3-i) * 2)); // Add nucleotide to int
+                if i == 3 {
+                    res.push(x);
+                    // println!("pushed to vec");
+                    x = 0;
+                }
+                
+                i = (i + 1) % 4;
+                size += 1;
+            }
+
+            if i != 0 {
+                res.push(x);
+                // println!("pushed to vec");
+            }
+
+            let p = PackedDna {
+                data: res, 
+                size: size,
+            };
+
+            p
+        }
+    }
 
     impl PackedDna {
         pub fn get(&self, idx: usize) -> Option<crate::Nuc> {
