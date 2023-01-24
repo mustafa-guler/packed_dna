@@ -15,6 +15,97 @@ use std::{convert::TryFrom, fmt::Display, str::FromStr};
 // Make sure to unit test and document all elements
 // Also, the internal representation of the PackedDna struct should be privately scoped
 
+mod packed {
+    // Internally, we have a vector of i8s. Each i8 represents up to 4
+    // nucleotides.
+    // 00 -> A
+    // 01 -> C
+    // 10 -> G
+    // 11 -> T
+    pub struct PackedDna {
+        data: Vec<i8>,
+        size: usize,
+    }
+
+    impl PackedDna {
+        // Returns a an option with Some(p) where p is the PackedDna struct 
+        // representig the DNA if parsing was successful and None otherwise.
+        pub fn from_str(s: &str) -> Option<Self> {
+            let upper = s.to_ascii_uppercase();
+            // let mut s_idx = 0; // Index in string
+            let mut i = 0; // Index in int that is being modified, from 0 to 3
+            let mut size = 0;
+            let mut x: i8 = 0; // Next int that will be added to the vector
+            let mut res: Vec<i8> = Vec::new();
+            // let len = s.len();
+
+            for c in upper.chars() {
+                // let c = upper[s_idx];
+                println!("i: {}", i);
+                let y: i8 = match c {
+                    'A' => 0,
+                    'C' => 1,
+                    'G' => 2,
+                    'T' => 3,
+                    _ => -1,
+                };
+                
+                if y == -1 {
+                    return None;
+                }
+
+                x = x | (y << ((3-i) * 2)); // Add nucleotide to int
+                if i == 3 {
+                    res.push(x);
+                    // println!("pushed to vec");
+                    x = 0;
+                }
+                
+                i = (i + 1) % 4;
+                size += 1;
+                // s_idx += s_idx;
+            }
+
+            if i != 0 {
+                res.push(x);
+                // println!("pushed to vec");
+            }
+
+            let p = PackedDna {
+                data: res, 
+                size: size,
+            };
+            // println!("Succesfully parsed DNA of size {}", p.size);
+            // println!("Vector has size {}", p.data.len());
+            // println!("SUCCESS");
+            return Some(p)
+        }
+    }
+
+    // impl FromIterator for PackedDna {
+
+    // }
+
+    impl PackedDna {
+        pub fn get(&self, idx: usize) -> Option<crate::Nuc> {
+            let vec_idx = idx / 4;
+            let int_idx = idx % 4;
+            let x = self.data[vec_idx];
+            let mask: i8 = 3 << ((3 - int_idx) * 2);
+            let y: u8 = ((x & mask) as u8) >> ((3 - int_idx) * 2);
+            let res = match y {
+                0 => Some(crate::Nuc::A),
+                1 => Some(crate::Nuc::C),
+                2 => Some(crate::Nuc::G),
+                3 => Some(crate::Nuc::T),
+                _ => None, // What should I do here?
+            };
+            
+            res
+        }
+    }
+}
+
 /// A nucleotide
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Nuc {
