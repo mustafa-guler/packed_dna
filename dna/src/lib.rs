@@ -15,19 +15,24 @@ use std::{convert::TryFrom, fmt::Display, str::FromStr};
 // Make sure to unit test and document all elements
 // Also, the internal representation of the PackedDna struct should be privately scoped
 
-// Module that contains the PackedDna struct and associated functionality
+/// Module that contains the PackedDna struct and associated functionality
 pub mod packed {
     pub use std::{fmt::Display, iter::FromIterator, str::FromStr};
+
+    /// Indicates error when parsing a string meant to represent DNA.
+    /// In particular, all characters must be nucleotides (i.e.) contained 
+    /// within {'a', 'c', 'g', 't', 'A', 'C', 'G', 'T'}.
     pub struct ParseDnaError<T: Display>(T);
 
-    // Internally, we have a vector of i8s. Each i8 represents up to 4
-    // nucleotides.
-    // 00 -> A
-    // 01 -> C
-    // 10 -> G
-    // 11 -> T
+    /// Internally, we have a vector of i8s. Each i8 represents up to 4
+    /// nucleotides.
+    /// 00 -> A
+    /// 01 -> C
+    /// 10 -> G
+    /// 11 -> T
     pub struct PackedDna {
         data: Vec<i8>,
+        /// The number of nucleotides contained in this struct
         pub size: usize,
     }
 
@@ -119,6 +124,7 @@ pub mod packed {
     }
 
     impl PackedDna {
+        /// Retrieves the nucleotides at index idx
         pub fn get(&self, idx: usize) -> crate::Nuc {
             let vec_idx = idx / 4;
             let int_idx = idx % 4;
