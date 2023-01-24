@@ -15,8 +15,9 @@ use std::{convert::TryFrom, fmt::Display, str::FromStr};
 // Make sure to unit test and document all elements
 // Also, the internal representation of the PackedDna struct should be privately scoped
 
-mod packed {
-    pub use std::{fmt::Display, str::FromStr, iter::FromIterator};
+// Module that contains the PackedDna struct and associated functionality
+pub mod packed {
+    pub use std::{fmt::Display, iter::FromIterator, str::FromStr};
     pub struct ParseDnaError<T: Display>(T);
 
     // Internally, we have a vector of i8s. Each i8 represents up to 4
@@ -31,9 +32,11 @@ mod packed {
     }
 
     impl FromStr for PackedDna {
+        // Error returned when parsing DNA fails (i.e. unexpected characters
+        // encountered).
         type Err = ParseDnaError<String>;
 
-        // Returns a an option with Some(p) where p is the PackedDna struct 
+        // Returns a an option with Some(p) where p is the PackedDna struct
         // representig the DNA if parsing was successful and None otherwise.
         fn from_str(s: &str) -> Result<Self, Self::Err> {
             let upper = s.to_ascii_uppercase();
@@ -50,17 +53,17 @@ mod packed {
                     'T' => 3,
                     _ => -1,
                 };
-                
+
                 if y == -1 {
                     return Err(ParseDnaError(upper));
                 }
 
-                x = x | (y << ((3-i) * 2)); // Add nucleotide to int
+                x |= y << ((3 - i) * 2); // Add nucleotide to int
                 if i == 3 {
                     res.push(x);
                     x = 0;
                 }
-                
+
                 i = (i + 1) % 4;
                 size += 1;
             }
@@ -70,16 +73,16 @@ mod packed {
             }
 
             let p = PackedDna {
-                data: res, 
-                size: size,
+                data: res,
+                size,
             };
-            
-            return Ok(p)
+
+            Ok(p)
         }
     }
 
     impl FromIterator<crate::Nuc> for PackedDna {
-        fn from_iter<I: IntoIterator<Item=crate::Nuc>>(iter: I) -> Self {
+        fn from_iter<I: IntoIterator<Item = crate::Nuc>>(iter: I) -> Self {
             let mut res: Vec<i8> = Vec::new();
             let mut i = 0; // Index in int that is being modified, from 0 to 3
             let mut size = 0;
@@ -92,13 +95,13 @@ mod packed {
                     crate::Nuc::T => 3,
                 };
 
-                x = x | (y << ((3-i) * 2)); // Add nucleotide to int
+                x |= y << ((3 - i) * 2); // Add nucleotide to int
                 if i == 3 {
                     res.push(x);
                     // println!("pushed to vec");
                     x = 0;
                 }
-                
+
                 i = (i + 1) % 4;
                 size += 1;
             }
@@ -108,12 +111,10 @@ mod packed {
                 // println!("pushed to vec");
             }
 
-            let p = PackedDna {
-                data: res, 
-                size: size,
-            };
-
-            p
+            PackedDna {
+                data: res,
+                size,
+            }
         }
     }
 
@@ -124,17 +125,16 @@ mod packed {
             let x = self.data[vec_idx];
             let mask: i8 = 3 << ((3 - int_idx) * 2);
             let y: u8 = ((x & mask) as u8) >> ((3 - int_idx) * 2);
-            let res = match y {
+
+            match y {
                 0 => crate::Nuc::A,
                 1 => crate::Nuc::C,
                 2 => crate::Nuc::G,
                 3 => crate::Nuc::T,
-                _ => crate::Nuc::A, // At this point, y should be 0, 1, 
-                                          // 2, or 3, but I don't know how to
-                                          // formally express it.
-            };
-            
-            res
+                _ => crate::Nuc::A, // At this point, y should be 0, 1,
+                                    // 2, or 3, but I don't know how to
+                                    // formally express it.
+            }
         }
     }
 }
@@ -203,7 +203,7 @@ mod tests {
             'C' => Some(crate::Nuc::C),
             'G' => Some(crate::Nuc::G),
             'T' => Some(crate::Nuc::T),
-            _ => None
+            _ => None,
         };
         let b = match res {
             Ok(a) => Some(a) == correct,
@@ -236,7 +236,7 @@ mod tests {
             "C" => Some(crate::Nuc::C),
             "G" => Some(crate::Nuc::G),
             "T" => Some(crate::Nuc::T),
-            _ => None
+            _ => None,
         };
         let b = match res {
             Ok(a) => Some(a) == correct,
@@ -289,7 +289,7 @@ mod tests {
         test_str_ok("g");
         test_str_ok("t");
 
-        // Test invalid strings 
+        // Test invalid strings
         test_str_err("L");
         test_str_err("xX");
     }
@@ -297,9 +297,13 @@ mod tests {
     #[test]
     fn fromstr_packed() {
         // Test a correct string
-        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CGACGTT");
+        let p: Result<crate::packed::PackedDna, _> =
+            <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CGACGTT");
         match p {
-            Err(_) => { assert!(false); () }
+            Err(_) => {
+                assert!(false);
+                ()
+            }
             Ok(dna) => {
                 assert!(dna.get(0) == crate::Nuc::C);
                 assert!(dna.get(1) == crate::Nuc::G);
@@ -313,16 +317,27 @@ mod tests {
         }
 
         // Test an invalid string
-        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgagTNonsense");
+        let p: Result<crate::packed::PackedDna, _> =
+            <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgagTNonsense");
         match p {
-            Err(_) => { assert!(true); () }
-            Ok(_) => { assert!(false); () }
+            Err(_) => {
+                assert!(true);
+                ()
+            }
+            Ok(_) => {
+                assert!(false);
+                ()
+            }
         }
 
         // Test mixed uppercase and lowercase string
-        let p: Result<crate::packed::PackedDna, _> = <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgaCgTt");
+        let p: Result<crate::packed::PackedDna, _> =
+            <crate::packed::PackedDna as crate::packed::FromStr>::from_str("CgaCgTt");
         match p {
-            Err(_) => { assert!(false); () }
+            Err(_) => {
+                assert!(false);
+                ()
+            }
             Ok(dna) => {
                 assert!(dna.size == 7);
                 assert!(dna.get(0) == crate::Nuc::C);
@@ -347,8 +362,8 @@ mod tests {
         vec.push(crate::Nuc::T);
         vec.push(crate::Nuc::G);
         vec.push(crate::Nuc::C);
-        let dna: crate::packed::PackedDna = <crate::packed::PackedDna as 
-            crate::packed::FromIterator<crate::Nuc>>::from_iter(vec);
+        let dna: crate::packed::PackedDna =
+            <crate::packed::PackedDna as crate::packed::FromIterator<crate::Nuc>>::from_iter(vec);
         assert!(dna.get(0) == crate::Nuc::A);
         assert!(dna.get(1) == crate::Nuc::C);
         assert!(dna.get(2) == crate::Nuc::T);

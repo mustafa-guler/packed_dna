@@ -26,7 +26,7 @@ struct Opts {
     ///
     /// It is case insensitive but only nucleotides A, C, G and T are supported.
     #[structopt(short = "d", long, required = true)]
-    dna: String
+    dna: String,
 }
 
 fn main() {
@@ -36,8 +36,11 @@ fn main() {
 
     let packed_dna = match <dna::packed::PackedDna as dna::packed::FromStr>::from_str(&dna) {
         Ok(p) => p,
-        Err(_) => panic!("{} is not a valid string. Input must consist of 
-            nucleotide characters only.", dna),
+        Err(_) => panic!(
+            "{} is not a valid string. Input must consist of 
+            nucleotide characters only.",
+            dna
+        ),
     };
 
     let mut a_count = 0;
@@ -50,10 +53,18 @@ fn main() {
     while i < len {
         let n = packed_dna.get(i);
         match n {
-            dna::Nuc::A => {a_count += 1; ()},
-            dna::Nuc::C => {c_count += 1; ()},
-            dna::Nuc::G => {g_count += 1; ()},
-            dna::Nuc::T => {t_count += 1; ()},
+            dna::Nuc::A => {
+                a_count += 1;
+            }
+            dna::Nuc::C => {
+                c_count += 1;
+            }
+            dna::Nuc::G => {
+                g_count += 1;
+            }
+            dna::Nuc::T => {
+                t_count += 1;
+            }
         }
         i += 1;
     }
