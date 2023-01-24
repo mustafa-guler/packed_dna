@@ -34,6 +34,35 @@ fn main() {
     let dna = opts.dna;
     println!("Input: {}", &dna);
 
+    let packed_dna = match <dna::packed::PackedDna as dna::packed::FromStr>::from_str(&dna) {
+        Ok(p) => p,
+        Err(_) => panic!("{} is not a valid string. Input must consist of 
+            nucleotide characters only.", dna),
+    };
+
+    let mut a_count = 0;
+    let mut c_count = 0;
+    let mut g_count = 0;
+    let mut t_count = 0;
+
+    let mut i = 0;
+    let len = packed_dna.size;
+    while i < len {
+        let n = packed_dna.get(i);
+        match n {
+            dna::Nuc::A => {a_count += 1; ()},
+            dna::Nuc::C => {c_count += 1; ()},
+            dna::Nuc::G => {g_count += 1; ()},
+            dna::Nuc::T => {t_count += 1; ()},
+        }
+        i += 1;
+    }
+
+    println!("Length: {}", len);
+    println!("A: {}", a_count);
+    println!("C: {}", c_count);
+    println!("G: {}", g_count);
+    println!("T: {}", t_count);
     // use FromStr on packed dna
     // iterate thru packed dna, count
     // print out counts
