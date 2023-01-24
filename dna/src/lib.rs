@@ -349,14 +349,20 @@ mod tests {
 
     #[test]
     fn fromiter_packed() {
-        // let mut vec: Vec<crate::Nuc> = Vec::new();
-        // vec.push(crate::Nuc::A);
-        // vec.push(crate::Nuc::C);
-        // vec.push(crate::Nuc::T);
-        // vec.push(crate::Nuc::T);
-        // vec.push(crate::Nuc::G);
-        // vec.push(crate::Nuc::C);
-
-        assert!(false);
+        let mut vec: Vec<crate::Nuc> = Vec::new();
+        vec.push(crate::Nuc::A);
+        vec.push(crate::Nuc::C);
+        vec.push(crate::Nuc::T);
+        vec.push(crate::Nuc::T);
+        vec.push(crate::Nuc::G);
+        vec.push(crate::Nuc::C);
+        let dna: crate::packed::PackedDna = <crate::packed::PackedDna as 
+            crate::packed::FromIterator<crate::Nuc>>::from_iter(vec);
+        assert!(dna.get(0) == crate::Nuc::A);
+        assert!(dna.get(1) == crate::Nuc::C);
+        assert!(dna.get(2) == crate::Nuc::T);
+        assert!(dna.get(3) == crate::Nuc::T);
+        assert!(dna.get(4) == crate::Nuc::G);
+        assert!(dna.get(5) == crate::Nuc::C);
     }
 }
