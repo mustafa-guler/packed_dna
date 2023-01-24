@@ -37,16 +37,12 @@ mod packed {
         // representig the DNA if parsing was successful and None otherwise.
         fn from_str(s: &str) -> Result<Self, Self::Err> {
             let upper = s.to_ascii_uppercase();
-            // let mut s_idx = 0; // Index in string
             let mut i = 0; // Index in int that is being modified, from 0 to 3
             let mut size = 0;
             let mut x: i8 = 0; // Next int that will be added to the vector
             let mut res: Vec<i8> = Vec::new();
-            // let len = s.len();
 
             for c in upper.chars() {
-                // let c = upper[s_idx];
-                // println!("i: {}", i);
                 let y: i8 = match c {
                     'A' => 0,
                     'C' => 1,
@@ -62,27 +58,22 @@ mod packed {
                 x = x | (y << ((3-i) * 2)); // Add nucleotide to int
                 if i == 3 {
                     res.push(x);
-                    // println!("pushed to vec");
                     x = 0;
                 }
                 
                 i = (i + 1) % 4;
                 size += 1;
-                // s_idx += s_idx;
             }
 
             if i != 0 {
                 res.push(x);
-                // println!("pushed to vec");
             }
 
             let p = PackedDna {
                 data: res, 
                 size: size,
             };
-            // println!("Succesfully parsed DNA of size {}", p.size);
-            // println!("Vector has size {}", p.data.len());
-            // println!("SUCCESS");
+            
             return Ok(p)
         }
     }
