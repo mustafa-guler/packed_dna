@@ -260,4 +260,46 @@ mod tests {
         test_str_err("L");
         test_str_err("xX");
     }
+
+    #[test]
+    fn fromstr_packed() {
+        // Test a correct string
+        let p = crate::packed::PackedDna::from_str("CGACGTT");
+        match p {
+            None => { assert!(false); () }
+            Some(dna) => {
+                assert!(dna.get(0) == Some(crate::Nuc::C));
+                assert!(dna.get(1) == Some(crate::Nuc::G));
+                assert!(dna.get(2) == Some(crate::Nuc::A));
+                assert!(dna.get(3) == Some(crate::Nuc::C));
+                assert!(dna.get(4) == Some(crate::Nuc::G));
+                assert!(dna.get(5) == Some(crate::Nuc::T));
+                assert!(dna.get(6) == Some(crate::Nuc::T));
+                ()
+            }
+        }
+
+        // Test an invalid string
+        let p = crate::packed::PackedDna::from_str("CgagTNonsense");
+        match p {
+            None => { assert!(true); () }
+            Some(dna) => { assert!(false); () }
+        }
+
+        // Test mixed uppercase and lowercase string
+        let p = crate::packed::PackedDna::from_str("CgACgTt");
+        match p {
+            None => { assert!(false); () }
+            Some(dna) => {
+                assert!(dna.get(0) == Some(crate::Nuc::C));
+                assert!(dna.get(1) == Some(crate::Nuc::G));
+                assert!(dna.get(2) == Some(crate::Nuc::A));
+                assert!(dna.get(3) == Some(crate::Nuc::C));
+                assert!(dna.get(4) == Some(crate::Nuc::G));
+                assert!(dna.get(5) == Some(crate::Nuc::T));
+                assert!(dna.get(6) == Some(crate::Nuc::T));
+                ()
+            }
+        }
+    }
 }
