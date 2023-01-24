@@ -127,19 +127,20 @@ mod packed {
     }
 
     impl PackedDna {
-        pub fn get(&self, idx: usize) -> Option<crate::Nuc> {
+        pub fn get(&self, idx: usize) -> crate::Nuc {
             let vec_idx = idx / 4;
             let int_idx = idx % 4;
             let x = self.data[vec_idx];
             let mask: i8 = 3 << ((3 - int_idx) * 2);
             let y: u8 = ((x & mask) as u8) >> ((3 - int_idx) * 2);
             let res = match y {
-                0 => Some(crate::Nuc::A),
-                1 => Some(crate::Nuc::C),
-                2 => Some(crate::Nuc::G),
-                3 => Some(crate::Nuc::T),
-                _ => None, // At this point, y should be 0, 1, 2, or 3, but
-                           // I don't know how to formally express it
+                0 => crate::Nuc::A,
+                1 => crate::Nuc::C,
+                2 => crate::Nuc::G,
+                3 => crate::Nuc::T,
+                _ => crate::Nuc::A, // At this point, y should be 0, 1, 
+                                          // 2, or 3, but I don't know how to
+                                          // formally express it.
             };
             
             res
@@ -309,13 +310,13 @@ mod tests {
         match p {
             Err(_) => { assert!(false); () }
             Ok(dna) => {
-                assert!(dna.get(0) == Some(crate::Nuc::C));
-                assert!(dna.get(1) == Some(crate::Nuc::G));
-                assert!(dna.get(2) == Some(crate::Nuc::A));
-                assert!(dna.get(3) == Some(crate::Nuc::C));
-                assert!(dna.get(4) == Some(crate::Nuc::G));
-                assert!(dna.get(5) == Some(crate::Nuc::T));
-                assert!(dna.get(6) == Some(crate::Nuc::T));
+                assert!(dna.get(0) == crate::Nuc::C);
+                assert!(dna.get(1) == crate::Nuc::G);
+                assert!(dna.get(2) == crate::Nuc::A);
+                assert!(dna.get(3) == crate::Nuc::C);
+                assert!(dna.get(4) == crate::Nuc::G);
+                assert!(dna.get(5) == crate::Nuc::T);
+                assert!(dna.get(6) == crate::Nuc::T);
                 ()
             }
         }
@@ -333,13 +334,13 @@ mod tests {
             Err(_) => { assert!(false); () }
             Ok(dna) => {
                 assert!(dna.size == 7);
-                assert!(dna.get(0) == Some(crate::Nuc::C));
-                assert!(dna.get(1) == Some(crate::Nuc::G));
-                assert!(dna.get(2) == Some(crate::Nuc::A));
-                assert!(dna.get(3) == Some(crate::Nuc::C));
-                assert!(dna.get(4) == Some(crate::Nuc::G));
-                assert!(dna.get(5) == Some(crate::Nuc::T));
-                assert!(dna.get(6) == Some(crate::Nuc::T));
+                assert!(dna.get(0) == crate::Nuc::C);
+                assert!(dna.get(1) == crate::Nuc::G);
+                assert!(dna.get(2) == crate::Nuc::A);
+                assert!(dna.get(3) == crate::Nuc::C);
+                assert!(dna.get(4) == crate::Nuc::G);
+                assert!(dna.get(5) == crate::Nuc::T);
+                assert!(dna.get(6) == crate::Nuc::T);
                 ()
             }
         }
@@ -348,6 +349,14 @@ mod tests {
 
     #[test]
     fn fromiter_packed() {
+        // let mut vec: Vec<crate::Nuc> = Vec::new();
+        // vec.push(crate::Nuc::A);
+        // vec.push(crate::Nuc::C);
+        // vec.push(crate::Nuc::T);
+        // vec.push(crate::Nuc::T);
+        // vec.push(crate::Nuc::G);
+        // vec.push(crate::Nuc::C);
+
         assert!(false);
     }
 }
