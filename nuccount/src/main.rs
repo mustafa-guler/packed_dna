@@ -18,6 +18,7 @@
 // be sure to exit with informative error messages if the input is invalid
 
 use structopt::StructOpt;
+use dna::packed::PackedDna;
 
 /// Count the number of occurrences of each nucleotide in the provided DNA.
 #[derive(Debug, StructOpt)]
@@ -26,11 +27,37 @@ struct Opts {
     ///
     /// It is case insensitive but only nucleotides A, C, G and T are supported.
     #[structopt(short = "d", long, required = true)]
-    dna: String
+    dna: String,
 }
 
 fn main() {
     let opts = Opts::from_args();
     let dna = opts.dna;
+
+    // Convert the DNA sequence to PackedDna
+    let packed_dna = match <PackedDna as std::str::FromStr>::from_str(&dna) {
+        Ok(packed_dna) => packed_dna,
+        Err(error) => {
+            //Error: failed to parse nucleotide from X - failed char
+            eprintln!("Error: {}", error);
+            std::process::exit(1);
+        }
+    };
+
     println!("Input: {}", &dna);
+
+    // Count the nucleotides
+    let mut nucleotide_counts = [0; 4];
+    for nucleotide in packed_dna.0 {
+        nucleotide_counts[nucleotide as usize] += 1;
+    }
+
+    // Print the nucleotide counts
+    let nucleotides = ['A', 'C', 'G', 'T'];
+    for (nucleotide, count) in nucleotides.iter().zip(nucleotide_counts.iter()) {
+        println!("{}: {}", nucleotide, count);
+    }
 }
+
+
+

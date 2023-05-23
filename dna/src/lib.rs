@@ -4,6 +4,19 @@
 
 use std::{convert::TryFrom, fmt::Display, str::FromStr};
 
+// TODO: add a packed module with the PackedDna struct
+//
+// this struct must have the following:
+// 1. A representation that is more memory efficient that simply storing a vector of `Nuc`
+// 2. A FromStr implementation (should be case insensitive like the `Nuc` impl)
+// 3. A `FromIterator` implementation to construct it from an iterator over `Nuc`s
+// 4. A `fn get(&self, idx: usize) -> Nuc` getter for a particular nucleotide
+//
+// Make sure to unit test and document all elements
+// Also, the internal representation of the PackedDna struct should be privately scoped
+
+/// A module containing a more memory-efficient representation for DNA.
+
 /// A nucleotide
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Nuc {
@@ -51,6 +64,8 @@ impl FromStr for Nuc {
     }
 }
 
+// Helper function for converting from u8 to Nuc
+// Is needed for get function below 
 impl TryFrom<u8> for Nuc {
     type Error = ParseNucError<u8>;
 
@@ -75,30 +90,24 @@ impl TryFrom<u8> for Nuc {
     }
 }
 
-
-// TODO: add a packed module with the PackedDna struct
-//
-// this struct must have the following:
-// 1. A representation that is more memory efficient that simply storing a vector of `Nuc`
-// 2. A FromStr implementation (should be case insensitive like the `Nuc` impl)
-// 3. A `FromIterator` implementation to construct it from an iterator over `Nuc`s
-// 4. A `fn get(&self, idx: usize) -> Nuc` getter for a particular nucleotide
-//
-// Make sure to unit test and document all elements
-// Also, the internal representation of the PackedDna struct should be privately scoped
-
-/// A module containing a more memory-efficient representation for DNA.
-
-mod packed {
+/// packed module with the PackedDna struct
+pub mod packed {
     use std::convert::TryFrom;
     use std::str::FromStr;
-    use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
+    use std::fmt::{Debug};
 
     #[derive(Debug, PartialEq)]
 
-    /// A more memory-efficient representation for DNA.
+    /// A more memory-efficient representation for DNA. 
+    /// Represents nucleotides in bits u8 as follows: 
+    /// A => 0
+    /// C => 1
+    /// G => 2
+    /// T => 3
+    /// 
+    /// PackedDna is public just for the sake of running testcases
+    /// otherwise easily switchable to private
     pub struct PackedDna(pub Vec<u8>);
-
 
     impl FromStr for PackedDna {
         type Err = crate::ParseNucError<char>;
@@ -120,9 +129,6 @@ mod packed {
             })
         }
     }
-
-    
-    
     
     impl std::iter::FromIterator<crate::Nuc> for PackedDna {
         /// Constructs a `PackedDna` instance from an iterator over `Nuc` values.
@@ -161,12 +167,7 @@ mod packed {
     }
 }
 
-
-
-
-
-
-
+//Running Testcases
 #[cfg(test)]
 mod tests {
     // TODO: fill in tests
@@ -176,8 +177,14 @@ mod tests {
     #[test]
     fn packed_dna_from_str() {
         // Valid input
-        let expected0: packed::PackedDna = packed::PackedDna(vec![0]);
-        assert_eq!(packed::PackedDna::from_str("A").unwrap(), expected0);
+        let expected_a: packed::PackedDna = packed::PackedDna(vec![0]);
+        assert_eq!(packed::PackedDna::from_str("A").unwrap(), expected_a);
+        let expected_c: packed::PackedDna = packed::PackedDna(vec![1]);
+        assert_eq!(packed::PackedDna::from_str("C").unwrap(), expected_c);
+        let expected_g: packed::PackedDna = packed::PackedDna(vec![2]);
+        assert_eq!(packed::PackedDna::from_str("G").unwrap(), expected_g);
+        let expected_t: packed::PackedDna = packed::PackedDna(vec![3]);
+        assert_eq!(packed::PackedDna::from_str("T").unwrap(), expected_t);
 
         let expected1: packed::PackedDna = packed::PackedDna(vec![0, 1, 2, 3]);
         assert_eq!(packed::PackedDna::from_str("ACGT").unwrap(), expected1);
